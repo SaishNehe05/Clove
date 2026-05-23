@@ -1056,6 +1056,13 @@ function startMic() {
     } else {
         // Use browser Web Speech API for Cloud/Vercel Mode
         console.log('[MIC] Initializing browser-based speech recognition...');
+        
+        // 1. Check for secure context (HTTPS/localhost is required for browser speech recognition)
+        if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            alert("🎙️ Microphone access requires a secure connection (HTTPS). Please ensure you are visiting the HTTPS version of the site.");
+            return;
+        }
+
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
             alert("🎙️ Your browser does not support native speech recognition. Please use Google Chrome, Edge, or Safari.");
@@ -1063,18 +1070,20 @@ function startMic() {
         }
 
         try {
+            // Provide instant visual UI feedback immediately upon clicking
+            isListening = true;
+            if (micBtn) {
+                micBtn.classList.add('listening');
+                micBtn.innerHTML = STOP_ICON_SVG;
+            }
+
             browserRecognizer = new SpeechRecognition();
             browserRecognizer.continuous = false;
             browserRecognizer.interimResults = false;
             browserRecognizer.lang = 'en-US';
 
             browserRecognizer.onstart = () => {
-                console.log('[MIC] Browser speech recognition started');
-                isListening = true;
-                if (micBtn) {
-                    micBtn.classList.add('listening');
-                    micBtn.innerHTML = STOP_ICON_SVG;
-                }
+                console.log('[MIC] Browser speech recognition session active');
             };
 
             browserRecognizer.onresult = (event) => {
@@ -1090,7 +1099,9 @@ function startMic() {
 
             browserRecognizer.onerror = (event) => {
                 console.warn('[MIC] Browser speech recognition error:', event.error);
-                if (event.error !== 'no-speech' && event.error !== 'aborted') {
+                if (event.error === 'not-allowed') {
+                    alert('🎙️ Microphone access was blocked. Please enable microphone permissions in your browser settings.');
+                } else if (event.error !== 'no-speech' && event.error !== 'aborted') {
                     alert('🎙️ Microphone Error: ' + event.error);
                 }
                 cleanupBrowserMic();
@@ -1105,6 +1116,7 @@ function startMic() {
         } catch (err) {
             console.error('Failed to start browser mic:', err);
             alert('🎙️ Failed to start microphone.');
+            cleanupBrowserMic();
         }
     }
 }
@@ -1115,7 +1127,9 @@ function stopMic() {
         socket.emit('stop_mic');
     } else {
         if (browserRecognizer) {
-            browserRecognizer.stop();
+            try {
+                browserRecognizer.stop();
+            } catch(e) {}
             cleanupBrowserMic();
         }
     }
