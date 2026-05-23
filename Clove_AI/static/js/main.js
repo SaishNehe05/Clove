@@ -1083,12 +1083,36 @@ function startMic() {
             browserRecognizer.lang = 'en-US';
 
             browserRecognizer.onstart = () => {
-                console.log('[MIC] Browser speech recognition session active');
+                console.log('[MIC] 🟢 Browser SpeechRecognition: onstart (session active)');
+            };
+
+            browserRecognizer.onaudiostart = () => {
+                console.log('[MIC] 🎤 Browser SpeechRecognition: onaudiostart (capturing audio)');
+            };
+
+            browserRecognizer.onsoundstart = () => {
+                console.log('[MIC] 🔊 Browser SpeechRecognition: onsoundstart (sound detected)');
+            };
+
+            browserRecognizer.onspeechstart = () => {
+                console.log('[MIC] 🗣️ Browser SpeechRecognition: onspeechstart (speech detected)');
+            };
+
+            browserRecognizer.onspeechend = () => {
+                console.log('[MIC] 🤫 Browser SpeechRecognition: onspeechend (speech ended)');
+            };
+
+            browserRecognizer.onsoundend = () => {
+                console.log('[MIC] 🔇 Browser SpeechRecognition: onsoundend (sound ended)');
+            };
+
+            browserRecognizer.onaudioend = () => {
+                console.log('[MIC] 🛑 Browser SpeechRecognition: onaudioend (audio capture ended)');
             };
 
             browserRecognizer.onresult = (event) => {
                 const text = event.results[0][0].transcript;
-                console.log('[MIC] Browser speech recognition result:', text);
+                console.log('[MIC] 📝 Browser SpeechRecognition: onresult:', text);
                 if (text && userInput) {
                     const existingText = userInput.value.trim();
                     userInput.value = existingText ? existingText + ' ' + text : text;
@@ -1098,7 +1122,7 @@ function startMic() {
             };
 
             browserRecognizer.onerror = (event) => {
-                console.warn('[MIC] Browser speech recognition error:', event.error);
+                console.warn('[MIC] ❌ Browser SpeechRecognition: onerror:', event.error);
                 if (event.error === 'not-allowed') {
                     alert('🎙️ Microphone access was blocked. Please enable microphone permissions in your browser settings.');
                 } else if (event.error !== 'no-speech' && event.error !== 'aborted') {
