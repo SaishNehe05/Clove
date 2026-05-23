@@ -1,0 +1,12 @@
+{
+    "gemini_api_key": "AIzaSyBlPa72yYeQ90InDQOcD1cVaf6rOo3MzLI",
+    "assistant_name": "Clove",
+    "theme": "dark",
+    "voice_enabled": true,
+    "hotkey": "ctrl+space",
+    "tesseract_path": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
+    "elevenlabs_api_key": "sk_6812722ff4eefafbe9a28d3dcda18dbd46562ed020d4d362",
+    "voice_id": "hpp4J3VqNfWAUOO0d1Us",
+    "supabase_url": "https://hjpdkogzaqzqzbvrkkuk.supabase.co",
+    "supabase_key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqcGRrb2d6YXF6cXpidnJra3VrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2Nzc4OTksImV4cCI6MjA5NDI1Mzg5OX0.uG9EoCmmp3GaIrKHnk9Nfr-gpIUVY5PNjKqrZGvoueo"
+}

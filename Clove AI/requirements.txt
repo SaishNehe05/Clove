@@ -1,0 +1,15 @@
+flask
+flask-socketio
+google-genai
+pyttsx3
+SpeechRecognition
+pyautogui
+psutil
+pytesseract
+pillow
+keyboard
+mouse
+python-dotenv
+pycaw
+comtypes
+supabase

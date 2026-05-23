@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.env.local
+.env.*.local
+venv/
+.venv/
+env/
+instance/
+.pytest_cache/
+.vercel
+Clove AI/static/assets/screenshot.png
+Clove AI/temp_ocr.png
+Clove AI/memory.json

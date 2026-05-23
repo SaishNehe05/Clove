@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clove | OS AI Assistant</title>
+    <meta name="description" content="Clove — A futuristic AI-powered desktop assistant for system automation, AI chat, and intelligent control.">
+    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="static/css/auth.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/all.min.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+</head>
+<body>
+    <!-- Authentication Overlay -->
+    <div id="auth-overlay">
+        <div class="auth-card" id="login-card">
+            <div class="auth-logo"><i class="fas fa-microchip"></i></div>
+            <h1 class="auth-title">Welcome to Clove</h1>
+            <p class="auth-subtitle">Please sign in to your AI assistant</p>
+            
+            <div id="login-conn-error" class="auth-error" style="display: none; background: rgba(244, 63, 94, 0.1); color: #ff4757; border-color: rgba(244, 63, 94, 0.2);"></div>
+            <div id="auth-error" class="auth-error">Invalid email or password.</div>
+            
+            <form class="auth-form" id="login-form">
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" id="login-email" placeholder="name@example.com" required>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="auth-btn" id="login-btn">Sign In</button>
+            </form>
+            
+            <div class="auth-switch">
+                Don't have an account? <span onclick="toggleAuth('signup')">Create one</span>
+            </div>
+        </div>
+
+        <div class="auth-card" id="signup-card" style="display: none;">
+            <div class="auth-logo"><i class="fas fa-user-plus"></i></div>
+            <h1 class="auth-title">Create Account</h1>
+            <p class="auth-subtitle">Join the future of desktop intelligence</p>
+            
+            <div id="signup-conn-error" class="auth-error" style="display: none; background: rgba(244, 63, 94, 0.1); color: #ff4757; border-color: rgba(244, 63, 94, 0.2);"></div>
+            <div id="signup-error" class="auth-error">Something went wrong.</div>
+            
+            <form class="auth-form" id="signup-form">
+                <div class="input-group">
+                    <label>Full Name</label>
+                    <input type="text" id="signup-name" placeholder="John Doe" required>
+                </div>
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" id="signup-email" placeholder="name@example.com" required>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="signup-password" placeholder="Min. 6 characters" required>
+                </div>
+                <button type="submit" class="auth-btn" id="signup-btn">Create Account</button>
+            </form>
+            
+            <div class="auth-switch">
+                Already have an account? <span onclick="toggleAuth('login')">Sign in</span>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="bg-canvas"></canvas>
+    <div class="cosmic-nebula"></div>
+    <div class="cosmic-landscape"></div>
+    <div class="cosmic-planet-container">
+        <div class="cosmic-planet-glow"></div>
+        <div class="cosmic-planet">
+            <div class="planet-texture"></div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- ═══ Sidebar Navigation ═══ -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-logo">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>
+                </div>
+                <div class="brand-info">
+                    <span class="brand-name">CLOVE AI</span>
+                    <span class="brand-subtitle">Your Personal AI Assistant</span>
+                </div>
+            </div>
+            
+            <div class="sidebar-divider"></div>
+            
+            <div class="nav-list">
+                <div class="nav-item active" data-tab="chat" onclick="switchTab('chat')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    <span class="nav-text">Chat</span>
+                </div>
+                
+                <div class="nav-item" onclick="triggerFilePicker()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                    <span class="nav-text">Files & Docs</span>
+                </div>
+
+                <div class="nav-item" data-tab="logs" onclick="switchTab('logs')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    <span class="nav-text">History</span>
+                </div>
+
+            </div>
+            
+            <div class="sidebar-spacer"></div>
+            
+            <!-- User Profile -->
+            <div class="user-profile" onclick="toggleProfilePopover(event)">
+                <div class="user-info">
+                    <div class="user-avatar" id="user-avatar">D</div>
+                    <div class="user-details">
+                        <span class="user-name" id="display-name">Darshan</span>
+                        <span class="user-status"><span class="status-dot"></span>Online</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom utility icons -->
+            <div class="sidebar-bottom-icons">
+                <button class="sidebar-icon-btn" onclick="openHelp()" title="Help">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                </button>
+                <button class="sidebar-icon-btn" id="logout-btn" title="Logout">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                </button>
+            </div>
+        </nav>
+        
+        <!-- ═══ Main Content ═══ -->
+        <main class="main-content">
+            <!-- Top Bar (Greeting) -->
+            <header class="top-bar">
+                <div class="top-bar-left">
+                    <div class="greeting">
+                        <span class="greeting-text" id="greeting-text">Good Evening, <strong>Darshan</strong></span>
+                        <span class="greeting-sub">How can I help you today?</span>
+                    </div>
+                </div>
+                <div class="top-bar-right">
+                    <div class="connection-badge" id="mode-badge" style="display: none;">CODING MODE</div>
+                    <div class="top-bar-search-container" id="top-bar-search-container">
+                        <input type="text" id="top-bar-search-input" placeholder="Find in chat..." autocomplete="off" spellcheck="false">
+                        <span class="search-match-counter" id="search-match-counter"></span>
+                        <button class="control-btn search-nav-btn" id="search-prev-btn" title="Previous match" onclick="navigateSearchMatch(-1, event)" style="display:none;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                        </button>
+                        <button class="control-btn search-nav-btn" id="search-next-btn" title="Next match" onclick="navigateSearchMatch(1, event)" style="display:none;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <button class="control-btn" title="Search" onclick="handleTopBarSearchClick(event)">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        </button>
+                    </div>
+                    <div class="connection-badge offline" id="conn-status">
+                        <span class="badge-dot"></span>
+                        OFFLINE
+                    </div>
+                    <button class="control-btn" title="More Options">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+                    </button>
+                </div>
+            </header>
+            
+            <!-- Panel Grid -->
+            <div class="panel-grid">
+                <!-- ═══ Primary Panel: Chat ═══ -->
+                <section class="glass-panel chat-panel-main" id="chat-panel">
+                    <!-- History Sidebar (ChatGPT style) -->
+                    <div id="history-sidebar" class="history-sidebar">
+                        <button class="new-chat-btn" onclick="startNewChat()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            New Chat
+                        </button>
+                        
+                        <div class="history-list-title">Recent Chats</div>
+                        
+                        <div class="history-list" id="history-list">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Main Chat Area -->
+                    <div class="main-chat-area">
+                        <div class="chat-container" id="chat-container">
+                            <div class="message msg-ai">
+                                <div class="msg-avatar">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>
+                                </div>
+                                <div class="msg-content">
+                                    Hey! I'm <strong>Clove</strong>, your AI assistant. I can help you with questions, open apps, control your system, and more. What can I do for you?
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="chat-input-area" style="flex-direction: column; align-items: stretch; gap: 8px;">
+                            <!-- Attachment Previews -->
+                            <div id="attachment-preview-container" class="attachment-preview-container" style="display: none;"></div>
+
+                            <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
+                                <button class="action-btn mic-btn" id="mic-btn" title="Voice input (Ctrl+Space)">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                                </button>
+                                
+                                <div class="chat-input-wrapper">
+                                    <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off" spellcheck="false">
+                                    <div class="input-inline-actions">
+                                        <button class="inline-action-btn" title="Attach file" onclick="toggleAttachmentMenu(event)">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                                        </button>
+                                        <div class="attachment-menu" id="attachment-menu">
+                                            <div class="attachment-option" onclick="triggerFilePicker('document')">
+                                                <i class="fas fa-file-alt"></i>
+                                                <span>Document</span>
+                                            </div>
+                                            <div class="attachment-option" onclick="triggerFilePicker('photo')">
+                                                <i class="fas fa-image"></i>
+                                                <span>Photo</span>
+                                            </div>
+                                            <div class="attachment-option" onclick="triggerFilePicker('video')">
+                                                <i class="fas fa-video"></i>
+                                                <span>Video</span>
+                                            </div>
+                                        </div>
+                                        <button class="inline-action-btn emoji-btn" id="emoji-btn" title="Emoji picker">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>
+                                        </button>
+                                        <div class="emoji-picker" id="emoji-picker">
+                                            <div class="emoji-grid">
+                                                <span onclick="addEmoji('😊')">😊</span><span onclick="addEmoji('😂')">😂</span><span onclick="addEmoji('🔥')">🔥</span><span onclick="addEmoji('👍')">👍</span>
+                                                <span onclick="addEmoji('❤️')">❤️</span><span onclick="addEmoji('✨')">✨</span><span onclick="addEmoji('🚀')">🚀</span><span onclick="addEmoji('😮')">😮</span>
+                                                <span onclick="addEmoji('🎉')">🎉</span><span onclick="addEmoji('🤔')">🤔</span><span onclick="addEmoji('👏')">👏</span><span onclick="addEmoji('🙌')">🙌</span>
+                                                <span onclick="addEmoji('😎')">😎</span><span onclick="addEmoji('💻')">💻</span><span onclick="addEmoji('🤖')">🤖</span><span onclick="addEmoji('💡')">💡</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <button class="action-btn send-btn" id="send-btn" title="Send message">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- Side Panel -->
+                <div class="side-panel">
+                    <!-- Clove AI Branding Card -->
+                    <div class="glass-panel branding-card">
+                        <div class="branding-content">
+                            <div class="branding-text">
+                                <span class="branding-title">Clove AI</span>
+                                <span class="branding-version">v2.0.0 | Pro</span>
+                            </div>
+                            <div class="branding-orb">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="4"></circle><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line></svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="glass-panel">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                                Quick Actions
+                            </div>
+                        </div>
+                        <div class="quick-actions">
+                            <button class="quick-action-btn" onclick="sendCommand('Start coding mode', true)">
+                                <span class="qa-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></span>
+                                Open AI Code Mode
+                            </button>
+                            <button class="quick-action-btn" onclick="sendCommand('read screen', true)">
+                                <span class="qa-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg></span>
+                                Analyze Screen
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- System Overview -->
+                    <div class="glass-panel" style="flex:1;">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                                System Overview
+                            </div>
+                        </div>
+                        <div class="system-overview">
+                            <div class="sys-row">
+                                <span class="sys-label">CPU</span>
+                                <div class="sys-bar"><div class="sys-bar-fill cpu-fill" id="cpu-bar" style="width:0%"></div></div>
+                                <span class="sys-value" id="cpu-val">0%</span>
+                            </div>
+                            <div class="sys-row">
+                                <span class="sys-label">RAM</span>
+                                <div class="sys-bar"><div class="sys-bar-fill ram-fill" id="ram-bar" style="width:0%"></div></div>
+                                <span class="sys-value" id="ram-val">0%</span>
+                            </div>
+                            <div class="sys-row">
+                                <span class="sys-label">Disk</span>
+                                <div class="sys-bar"><div class="sys-bar-fill disk-fill" id="disk-bar" style="width:0%"></div></div>
+                                <span class="sys-value" id="disk-val">0%</span>
+                            </div>
+                            <div class="sys-row">
+                                <span class="sys-label">Network</span>
+                                <span class="sys-value network-status" id="conn-text">Connected</span>
+                            </div>
+                        </div>
+                        <!-- Voice Indicators (hidden by default) -->
+                        <div id="voice-indicator" style="display:none; align-items:center; gap:8px; color:#10b981; font-size:12px; padding:12px 20px;">
+                            <div class="pulse-ring"></div>
+                            Always Listening...
+                        </div>
+                        <div id="last-heard" style="display:none; color:#888; font-size:11px; font-style:italic; padding:0 20px 12px;">
+                            Heard: "..."
+                        </div>
+                        <!-- Hidden battery elements for JS compatibility -->
+                        <span id="battery-val" style="display:none;">0%</span>
+                        <div id="battery-bar" style="display:none;"></div>
+                    </div>
+
+                    <!-- Clock / Info Widget -->
+                    <div class="glass-panel clock-widget">
+                        <div class="clock-content">
+                            <div class="clock-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                            </div>
+                            <div class="clock-info">
+                                <span class="clock-time" id="live-clock">--:--:--</span>
+                                <span class="clock-date" id="live-date"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Gmail-style Profile Popover -->
+    <div id="profile-popover" onclick="event.stopPropagation()">
+        <div class="popover-profile-info">
+            <div class="popover-avatar" id="popover-avatar">D</div>
+            <div class="popover-user-details">
+                <span class="popover-username" id="popover-name">Darshan</span>
+                <span class="popover-email" id="popover-email">darshan@example.com</span>
+            </div>
+        </div>
+        <div style="height: 1px; background: var(--surface-border); margin: 6px 0;"></div>
+        <div class="popover-actions">
+            <button class="popover-action-btn" onclick="openHelp()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                Help & Support
+            </button>
+            <button class="popover-action-btn popover-signout-btn" id="popover-logout-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                Sign Out
+            </button>
+        </div>
+    </div>
+
+    <!-- Floating Settings Modal -->
+    <div id="settings-modal" onclick="closeSettingsModal(event)">
+        <div class="settings-modal-card" onclick="event.stopPropagation()">
+            <div class="settings-modal-header">
+                <h2 style="font-size: 13px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 10px; text-transform: uppercase; letter-spacing: 1px; margin: 0;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    Preferences & API Keys
+                </h2>
+                <button onclick="closeSettingsModal(null)" class="inline-action-btn" title="Close" style="background: rgba(255,255,255,0.05); color: #fff; width: 32px; height: 32px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            
+            <div class="settings-modal-body">
+                <div id="settings-status-msg" style="display: none; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; margin-bottom: 15px;"></div>
+                
+                <form id="settings-form" style="display: flex; flex-direction: column; gap: 18px;">
+                    <!-- Gemini API Key -->
+                    <div class="input-group" style="display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Gemini API Key</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="password" id="pref-gemini-key" style="flex: 1; background: rgba(255,255,255,0.04); border: 1px solid var(--surface-border); border-radius: 8px; padding: 10px 14px; color: #fff; font-size: 13px;" placeholder="AIzaSy...">
+                            <button type="button" onclick="togglePasswordVisibility('pref-gemini-key')" style="background: rgba(255,255,255,0.05); border: 1px solid var(--surface-border); border-radius: 8px; width: 40px; color: var(--text-secondary); cursor: pointer;"><i class="fas fa-eye"></i></button>
+                        </div>
+                        <span style="font-size: 11px; color: var(--text-muted);">Used for natural language processing and computer vision.</span>
+                    </div>
+
+                    <!-- Assistant Name -->
+                    <div class="input-group" style="display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Assistant Name</label>
+                        <input type="text" id="pref-assistant-name" style="background: rgba(255,255,255,0.04); border: 1px solid var(--surface-border); border-radius: 8px; padding: 10px 14px; color: #fff; font-size: 13px;" placeholder="Clove">
+                    </div>
+
+                    <div style="height: 1px; background: var(--surface-border); margin: 10px 0;"></div>
+
+                    <!-- ElevenLabs API Key -->
+                    <div class="input-group" style="display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">ElevenLabs API Key</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="password" id="pref-eleven-key" style="flex: 1; background: rgba(255,255,255,0.04); border: 1px solid var(--surface-border); border-radius: 8px; padding: 10px 14px; color: #fff; font-size: 13px;" placeholder="sk_...">
+                            <button type="button" onclick="togglePasswordVisibility('pref-eleven-key')" style="background: rgba(255,255,255,0.05); border: 1px solid var(--surface-border); border-radius: 8px; width: 40px; color: var(--text-secondary); cursor: pointer;"><i class="fas fa-eye"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- ElevenLabs Voice ID -->
+                    <div class="input-group" style="display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">ElevenLabs Voice ID</label>
+                        <input type="text" id="pref-voice-id" style="background: rgba(255,255,255,0.04); border: 1px solid var(--surface-border); border-radius: 8px; padding: 10px 14px; color: #fff; font-size: 13px;" placeholder="EXAVITQu4vr4xnNLMQyz">
+                    </div>
+
+                    <div style="height: 1px; background: var(--surface-border); margin: 10px 0;"></div>
+
+                    <!-- Supabase Cloud Sync -->
+                    <div class="input-group" style="display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Supabase URL</label>
+                        <input type="text" id="pref-supabase-url" style="background: rgba(255,255,255,0.04); border: 1px solid var(--surface-border); border-radius: 8px; padding: 10px 14px; color: #fff; font-size: 13px;" placeholder="https://your-project.supabase.co">
+                    </div>
+
+                    <div class="input-group" style="display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Supabase Anon Key</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="password" id="pref-supabase-key" style="flex: 1; background: rgba(255,255,255,0.04); border: 1px solid var(--surface-border); border-radius: 8px; padding: 10px 14px; color: #fff; font-size: 13px;" placeholder="eyJhbGciOiJIUzI1Ni...">
+                            <button type="button" onclick="togglePasswordVisibility('pref-supabase-key')" style="background: rgba(255,255,255,0.05); border: 1px solid var(--surface-border); border-radius: 8px; width: 40px; color: var(--text-secondary); cursor: pointer;"><i class="fas fa-eye"></i></button>
+                        </div>
+                    </div>
+
+                    <button type="submit" style="margin-top: 10px; background: var(--accent-blue); color: #fff; border: none; border-radius: 8px; padding: 12px; font-weight: 600; cursor: pointer; transition: all var(--transition-smooth); box-shadow: 0 4px 15px rgba(59,130,246,0.2);">
+                        Save Preferences
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="static/js/main.js"></script>
+    <script>
+        // Dynamic greeting based on time of day
+        (function() {
+            const hour = new Date().getHours();
+            const el = document.getElementById('greeting-text');
+            const nameEl = document.getElementById('display-name');
+            const name = nameEl ? nameEl.textContent : 'User';
+            let greet = 'Good Evening';
+            if (hour < 12) greet = 'Good Morning';
+            else if (hour < 17) greet = 'Good Afternoon';
+            if (el) el.innerHTML = greet + ', <strong>' + name + '</strong>';
+        })();
+        // Live date
+        (function updateDate() {
+            const d = new Date();
+            const el = document.getElementById('live-date');
+            if (el) el.textContent = d.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+            setTimeout(updateDate, 60000);
+        })();
+    </script>
+</body>
+</html>
