@@ -6,14 +6,14 @@ import json
 clove_ai_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "Clove_AI"))
 sys.path.append(clove_ai_dir)
 
-from flask import Flask, jsonify, request, Response
+from flask import Flask, jsonify, request, Response, send_from_directory
 from core.ai_engine import AIEngine
 from core.automation import AutomationEngine
 from core.memory_system import MemorySystem
 from core.system_monitor import SystemMonitor
 from core.voice_engine import VoiceEngine
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder=os.path.join(clove_ai_dir, 'static'), static_url_path='/static')
 
 # Initialize Modules
 memory = MemorySystem()
@@ -35,7 +35,7 @@ def add_cors_headers(response):
 # Fallback index route
 @app.route('/')
 def home():
-    return jsonify({"status": "Clove AI Cloud Backend Operational", "version": "2.0.0"})
+    return send_from_directory(clove_ai_dir, 'index.html')
 
 # API Auth Routes
 @app.route('/api/auth/login', methods=['POST', 'OPTIONS'])
