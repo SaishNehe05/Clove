@@ -1032,26 +1032,93 @@ function removePendingIndicator() {
     if (indicator) indicator.remove();
 }
 
-// ─── Voice Interaction (Backend Python-Driven) ───
+// ─── Voice Interaction (Backend Python-Driven & Browser-Speech fallback) ───
 let isListening = false;
+let browserRecognizer = null;
 
 // SVG icons for mic states
 const MIC_ICON_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>';
 const STOP_ICON_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="6" y="6" width="12" height="12" rx="2"></rect></svg>';
 
-function startMic() {
-    if (!isLocalMode()) {
-        alert("🎙️ Microphone recording requires running Clove AI locally on your desktop. Cloud microphone recording is not supported.");
-        return;
+function cleanupBrowserMic() {
+    isListening = false;
+    if (micBtn) {
+        micBtn.classList.remove('listening');
+        micBtn.innerHTML = MIC_ICON_SVG;
     }
-    console.log('[MIC] Requesting backend to start mic...');
-    socket.emit('start_mic');
+    browserRecognizer = null;
+}
+
+function startMic() {
+    if (isLocalMode()) {
+        console.log('[MIC] Requesting backend to start mic...');
+        socket.emit('start_mic');
+    } else {
+        // Use browser Web Speech API for Cloud/Vercel Mode
+        console.log('[MIC] Initializing browser-based speech recognition...');
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            alert("🎙️ Your browser does not support native speech recognition. Please use Google Chrome, Edge, or Safari.");
+            return;
+        }
+
+        try {
+            browserRecognizer = new SpeechRecognition();
+            browserRecognizer.continuous = false;
+            browserRecognizer.interimResults = false;
+            browserRecognizer.lang = 'en-US';
+
+            browserRecognizer.onstart = () => {
+                console.log('[MIC] Browser speech recognition started');
+                isListening = true;
+                if (micBtn) {
+                    micBtn.classList.add('listening');
+                    micBtn.innerHTML = STOP_ICON_SVG;
+                }
+            };
+
+            browserRecognizer.onresult = (event) => {
+                const text = event.results[0][0].transcript;
+                console.log('[MIC] Browser speech recognition result:', text);
+                if (text && userInput) {
+                    const existingText = userInput.value.trim();
+                    userInput.value = existingText ? existingText + ' ' + text : text;
+                    userInput.focus();
+                    userInput.selectionStart = userInput.selectionEnd = userInput.value.length;
+                }
+            };
+
+            browserRecognizer.onerror = (event) => {
+                console.warn('[MIC] Browser speech recognition error:', event.error);
+                if (event.error !== 'no-speech' && event.error !== 'aborted') {
+                    alert('🎙️ Microphone Error: ' + event.error);
+                }
+                cleanupBrowserMic();
+            };
+
+            browserRecognizer.onend = () => {
+                console.log('[MIC] Browser speech recognition ended');
+                cleanupBrowserMic();
+            };
+
+            browserRecognizer.start();
+        } catch (err) {
+            console.error('Failed to start browser mic:', err);
+            alert('🎙️ Failed to start microphone.');
+        }
+    }
 }
 
 function stopMic() {
-    if (!isLocalMode()) return;
-    console.log('[MIC] Requesting backend to stop mic...');
-    socket.emit('stop_mic');
+    if (isLocalMode()) {
+        console.log('[MIC] Requesting backend to stop mic...');
+        socket.emit('stop_mic');
+    } else {
+        if (browserRecognizer) {
+            browserRecognizer.stop();
+            cleanupBrowserMic();
+        }
+    }
 }
 
 // Socket handlers for mic
