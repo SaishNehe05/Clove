@@ -3,6 +3,7 @@ flask-socketio
 google-genai
 pyttsx3
 SpeechRecognition
+pyaudio
 pyautogui
 psutil
 pytesseract
