@@ -11,6 +11,6 @@ env/
 instance/
 .pytest_cache/
 .vercel
-Clove AI/static/assets/screenshot.png
-Clove AI/temp_ocr.png
-Clove AI/memory.json
+Clove_AI/static/assets/screenshot.png
+Clove_AI/temp_ocr.png
+Clove_AI/memory.json

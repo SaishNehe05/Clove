@@ -2,8 +2,8 @@ import sys
 import os
 import json
 
-# Add "Clove AI" to the system path so we can import from core
-clove_ai_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "Clove AI"))
+# Add "Clove_AI" to the system path so we can import from core
+clove_ai_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "Clove_AI"))
 sys.path.append(clove_ai_dir)
 
 from flask import Flask, jsonify, request, Response
